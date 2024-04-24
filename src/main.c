@@ -14,9 +14,23 @@
 // Prototipo de la funci�n de inicializaci�n del sistema
 void SystemInit(void);
 
+void delay_ms(uint32_t ms){
+	while(ms)
+	{	for(uint32_t i = 0; i < 13800; i++){
+
+	}
+	ms--;
+	}
+}
+
+
 typedef enum {
-	PRENDER = 0,		//ON
-	APAGAR,				//OFF
+	ENCENDIDO_25 = 0,		//Prende 25 ms
+	APAGADO_25,				//Apaga 25 ms
+	ENCENDIDO_40,			//Prende 40 ms
+	APAGADO_40,				//Apaga 40 ms
+	ENCENDIDO_110,			//Prende 110 ms
+	APAGADO_110,			//Apaga 110 ms
 } VALORES;
 
 int main(void) {
@@ -26,12 +40,6 @@ int main(void) {
 	// Habilitar el reloj para el puerto GPIOA
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-	// Habilitar el reloj para el puerto GPIOC (donde est� conectado el pulsador B2)
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-
-	// Habilitar el reloj para el puerto GPIOB (donde est� conectado el pulsador D14)
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-
 	// Configurar el pin PA5 como salida
 	GPIO_InitTypeDef GPIO_InitStruct_LED;
 	GPIO_InitStruct_LED.GPIO_Pin = GPIO_Pin_5;
@@ -39,42 +47,47 @@ int main(void) {
 	GPIO_InitStruct_LED.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStruct_LED.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStruct_LED.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
 	GPIO_Init(GPIOA, &GPIO_InitStruct_LED);
 
-	//Configurar el pin PC13 como entrada (pulsador)
-	GPIO_InitTypeDef GPIO_InitStruct_Pulsador;
-	GPIO_InitStruct_Pulsador.GPIO_Pin = GPIO_Pin_13;
-	GPIO_InitStruct_Pulsador.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStruct_Pulsador.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStruct_Pulsador.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOC, &GPIO_InitStruct_Pulsador);
-
-	//Configurar el pin PB9 como entrada (pulsador)
-	GPIO_InitTypeDef GPIO_InitStruct_Pulsador_Externo;
-	GPIO_InitStruct_Pulsador_Externo.GPIO_Pin = GPIO_Pin_9;
-	GPIO_InitStruct_Pulsador_Externo.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStruct_Pulsador_Externo.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStruct_Pulsador_Externo.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOB, &GPIO_InitStruct_Pulsador_Externo);
-
-	VALORES VALOR = PRENDER;
+	VALORES VALOR = ENCENDIDO_25;
 
 	while (1) {
 		switch(VALOR){
-		case PRENDER:
-			// Leer el estado del pulsador
-			if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13) == Bit_RESET || GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9) == Bit_RESET) {
-				// El pulsador est� presionado, encender el LED
-				GPIO_SetBits(GPIOA, GPIO_Pin_5);
-			}else{
-				VALOR = APAGAR;
-			}
+		case ENCENDIDO_25:
+			GPIO_SetBits(GPIOA, GPIO_Pin_5);
+			VALOR = APAGADO_25;
+			delay_ms(25);
 			break;
 
-		case APAGAR:
-			// El pulsador no est� presionado, apagar el LED
+		case APAGADO_25:
 			GPIO_ResetBits(GPIOA, GPIO_Pin_5);
-			VALOR = PRENDER;
+			VALOR = ENCENDIDO_40;
+			delay_ms(25);
+			break;
+
+		case ENCENDIDO_40:
+			GPIO_SetBits(GPIOA, GPIO_Pin_5);
+			VALOR = APAGADO_40;
+			delay_ms(40);
+			break;
+
+		case APAGADO_40:
+			GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+			VALOR = ENCENDIDO_110;
+			delay_ms(40);
+			break;
+
+		case ENCENDIDO_110:
+			GPIO_SetBits(GPIOA, GPIO_Pin_5);
+			VALOR = APAGADO_110;
+			delay_ms(110);
+			break;
+
+		case APAGADO_110:
+			GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+			VALOR = ENCENDIDO_25;
+			delay_ms(110);
 			break;
 		}
 	}
